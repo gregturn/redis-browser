@@ -50,21 +50,39 @@ public class KeyController {
 
 	private static final Logger log = LoggerFactory.getLogger(KeyController.class);
 
-	@Autowired
 	StringRedisTemplate redisTemplate;
 
-	@Autowired
 	ObjectMapper mapper;
+
+	@Autowired
+	public KeyController(StringRedisTemplate template, ObjectMapper mapper) {
+		this.redisTemplate = template;
+		this.mapper = mapper;
+	}
+
+	@RequestMapping(method = RequestMethod.GET, value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> index() {
+		return ResponseEntity.ok(new Resources<>(
+			Collections.EMPTY_LIST,
+			linkTo(methodOn(KeyController.class).index()).withSelfRel(),
+			linkTo(methodOn(KeyController.class).getKeys()).withRel("keys")
+		));
+	}
 
 	@RequestMapping(method = RequestMethod.GET, value = "/keys", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getKeys() {
 		Set<String> keys = redisTemplate.keys("*");
 
+		final List<Link> links = new ArrayList<>();
+		links.add(linkTo(methodOn(KeyController.class).getKeys()).withSelfRel());
+		links.add(linkTo(methodOn(KeyController.class).index()).withRel("root"));
+		links.addAll(keys.stream()
+			.map((String key) -> linkTo(methodOn(KeyController.class).getKey(key)).withRel(key))
+			.collect(Collectors.toList()));
+
 		return ResponseEntity.ok(new Resources<>(
 			Collections.EMPTY_LIST,
-			keys.stream()
-				.map((String key) -> linkTo(methodOn(KeyController.class).getKey(key)).withRel(key))
-				.collect(Collectors.toList())
+				links
 		));
 	}
 
@@ -120,7 +138,9 @@ public class KeyController {
 				} catch (IOException e) {
 					// Swallow exception and move on
 				}
-				return ResponseEntity.ok(value);
+
+				return ResponseEntity.ok(new Resource<>(value, links));
+
 			} else if (content.startsWith("{")) {
 				try {
 					value = mapper.readValue(content, Map.class);
@@ -138,7 +158,6 @@ public class KeyController {
 				return ResponseEntity.ok(value);
 
 			}
-
 
 		} else { // keys.size() == 0
 
