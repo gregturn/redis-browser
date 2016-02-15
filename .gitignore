@@ -80,3 +80,9 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 
+
+# NodeJS
+node_modules
+
+#Webpack
+src/main/resources/static/built

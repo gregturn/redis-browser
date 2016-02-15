@@ -60,7 +60,7 @@ public class KeyController {
 		this.mapper = mapper;
 	}
 
-	@RequestMapping(method = RequestMethod.GET, value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(method = RequestMethod.GET, value = "/root", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> index() {
 		return ResponseEntity.ok(new Resources<>(
 			Collections.EMPTY_LIST,
