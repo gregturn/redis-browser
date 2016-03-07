@@ -31,9 +31,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -50,17 +50,17 @@ public class KeyController {
 
 	private static final Logger log = LoggerFactory.getLogger(KeyController.class);
 
-	StringRedisTemplate redisTemplate;
+	StringRedisTemplate template;
 
 	ObjectMapper mapper;
 
 	@Autowired
 	public KeyController(StringRedisTemplate template, ObjectMapper mapper) {
-		this.redisTemplate = template;
+		this.template = template;
 		this.mapper = mapper;
 	}
 
-	@RequestMapping(method = RequestMethod.GET, value = "/root", produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(method = RequestMethod.GET, value = "/root", produces = MediaTypes.HAL_JSON_VALUE)
 	public ResponseEntity<?> index() {
 		return ResponseEntity.ok(new Resources<>(
 			Collections.EMPTY_LIST,
@@ -69,9 +69,9 @@ public class KeyController {
 		));
 	}
 
-	@RequestMapping(method = RequestMethod.GET, value = "/keys", produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(method = RequestMethod.GET, value = "/keys", produces = MediaTypes.HAL_JSON_VALUE)
 	public ResponseEntity<?> getKeys() {
-		Set<String> keys = redisTemplate.keys("*");
+		Set<String> keys = template.keys("*");
 
 		final List<Link> links = new ArrayList<>();
 		links.add(linkTo(methodOn(KeyController.class).getKeys()).withSelfRel());
@@ -86,9 +86,9 @@ public class KeyController {
 		));
 	}
 
-	@RequestMapping(method = RequestMethod.GET, value = "/key", produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(method = RequestMethod.GET, value = "/key", produces = MediaTypes.HAL_JSON_VALUE)
 	public ResponseEntity<?> getKey(@RequestParam("q") String q) {
-		final Set<String> keys = redisTemplate.keys(q);
+		final Set<String> keys = template.keys(q);
 
 		if (keys.size() > 1) {
 
@@ -96,7 +96,8 @@ public class KeyController {
 
 		} else if (keys.size() == 1) {
 
-			final String content = redisTemplate.opsForValue().get(q);
+			log.info("Fetching <" + q + ">");
+			final String content = template.opsForValue().get(q);
 
 			if (content == null) {
 				return ResponseEntity.notFound().build();
@@ -117,14 +118,14 @@ public class KeyController {
 						if (val instanceof String) {
 							String stringVal = (String) val;
 							log.info("Is " + stringVal + " a key?");
-							final Set<String> valKeys = redisTemplate.keys(stringVal);
+							final Set<String> valKeys = template.keys(stringVal);
 							if (valKeys.size() > 1) {
 								log.info("Exact key? YES");
 								for (String key : valKeys) {
 									links.add(linkTo(methodOn(KeyController.class).getKey(key)).withRel(key));
 								}
 							} else {
-								final Set<String> wildcardKeys = redisTemplate.keys("*" + stringVal + "*");
+								final Set<String> wildcardKeys = template.keys("*" + stringVal + "*");
 								for (String key : wildcardKeys) {
 									links.add(linkTo(methodOn(KeyController.class).getKey(key)).withRel(key));
 								}

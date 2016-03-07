@@ -1,0 +1,42 @@
+////////////////////////////////////////////////////////////////////////
+// Pre-sets must be done BEFORE a module is imported. Some of these settings are at the top, while others
+// are right before the import statement.
+////////////////////////////////////////////////////////////////////////
+
+// Spring's palette (found on spring.io)
+$spring-green: #6db33f;
+$spring-black: #34302d;
+$spring-antique-white: #F1F1F1;
+$spring-white: #eee;
+
+//$inuit-base-font-size:  12px;
+$inuit-base-line-height:  18px;
+$inuit-base-background-color: $spring-antique-white;
+
+////////////////////////////////////////////////////////////////////////
+// Here are the layers of inuit. Each layer needs to have its order preserved, but modules within the same layer
+// can be imported in any order.
+////////////////////////////////////////////////////////////////////////
+
+// Settings layer
+@import "node_modules/inuit-starter-kit/node_modules/inuit-defaults/settings.defaults";
+@import "node_modules/inuit-responsive-tools/node_modules/inuit-responsive-settings/settings.responsive";
+
+// Tools layer
+@import "node_modules/inuit-starter-kit/node_modules/inuit-functions/tools.functions";
+@import "node_modules/inuit-starter-kit/node_modules/inuit-mixins/tools.mixins";
+@import "node_modules/inuit-responsive-tools/tools.responsive";
+@import "node_modules/inuit-responsive-widths/node_modules/inuit-tools-widths/tools.widths";
+
+// Generic layer
+@import "node_modules/inuit-starter-kit/node_modules/inuit-normalize/generic.normalize";
+@import "node_modules/inuit-starter-kit/node_modules/inuit-box-sizing/generic.box-sizing";
+
+@import "node_modules/inuit-starter-kit/node_modules/inuit-page/base.page";
+
+// Objects layer
+$inuit-enable-layout--large: true;
+@import "node_modules/inuit-layout/objects.layout";
+
+@import "node_modules/inuit-responsive-widths/node_modules/inuit-widths/trumps.widths";
+@import "node_modules/inuit-responsive-widths/trumps.widths-responsive";
